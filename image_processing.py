@@ -1,38 +1,64 @@
 import cv2
+import json
+from enum import Enum
+
+# # Niedojrzały (zielony)
+# GREEN_LOWER = (30, 80, 80)
+# GREEN_UPPER = (65, 255, 255)
+
+# # Dojrzały (żółty)
+# YELLOW_LOWER = (20, 100, 150)
+# YELLOW_UPPER = (35, 255, 255)
+
+# # Przejrzały (brązowy)
+# BROWN_LOWER = (10, 30, 50)
+# BROWN_UPPER = (25, 150, 180)
+
+PRESET_FILE = "hsv.json"
+PRESETS = None
 
 
-# Niedojrzały (zielony)
-GREEN_LOWER = (30, 80, 80)
-GREEN_UPPER = (65, 255, 255)
-
-# Dojrzały (żółty)
-YELLOW_LOWER = (20, 100, 150)
-YELLOW_UPPER = (35, 255, 255)
-
-# Przejrzały (brązowy)
-BROWN_LOWER = (10, 30, 50)
-BROWN_UPPER = (25, 150, 180)
+class BananaStage(Enum):
+    GREEN = "green"
+    YELLOW = "yellow"
+    BROWN = "brown"
 
 
+def _get(stage: BananaStage):
+    return PRESETS[stage.value]
 
 
-def create_hsv_mask(image,lower, upper):
+def load_presets():
+    global PRESETS
+    with open(PRESET_FILE, "r") as f:
+        PRESETS = json.load(f)
+
+
+def create_hsv_mask(image, lower, upper):
     imgHSV = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    mask = cv2.inRange(imgHSV, lower, upper)
-    return mask
+    return cv2.inRange(imgHSV, tuple(lower), tuple(upper))
 
-def calcullate_total_range():
-    lower = [GREEN_LOWER, YELLOW_LOWER, BROWN_LOWER]
-    upper = [GREEN_UPPER, YELLOW_UPPER, BROWN_UPPER]
-    global_lower = tuple(min(values) for values in zip(*lower))
-    global_upper = tuple(max(values) for values in zip(*upper))
-    return [global_lower, global_upper]
+def create_unripe(image):
+    p = _get(BananaStage.GREEN)
+    return create_hsv_mask(image, p["lower"], p["upper"])
 
-def create_unripe(image): return create_hsv_mask(image, GREEN_LOWER, GREEN_UPPER)
-def create_ripe(image): return create_hsv_mask(image, YELLOW_LOWER, YELLOW_UPPER)
-def create_overripe(image): return create_hsv_mask(image, BROWN_LOWER, BROWN_UPPER)
+
+def create_ripe(image):
+    p = _get(BananaStage.YELLOW)
+    return create_hsv_mask(image, p["lower"], p["upper"])
+
+
+def create_overripe(image):
+    p = _get(BananaStage.BROWN)
+    return create_hsv_mask(image, p["lower"], p["upper"])
+
+
 def create_total_mask(image):
-    total_range = calcullate_total_range()
-    return create_hsv_mask(image, total_range[0], total_range[1])
+    ranges = [_get(stage) for stage in BananaStage]
+
+    lower = [min(r["lower"][i] for r in ranges) for i in range(3)]
+    upper = [max(r["upper"][i] for r in ranges) for i in range(3)]
+
+    return create_hsv_mask(image, lower, upper)
  
 
