@@ -12,15 +12,22 @@ def _load_current():
     image = cv2.resize(image, (WIDTH, HEIGHT))
     return image
 
+
 def load_next():
     global INDEX
     INDEX = (INDEX + 1) % len(FILE_LIST)
     return _load_current()
+
 
 def load_previous():
     global INDEX
     INDEX = (INDEX - 1) % len(FILE_LIST)
     return _load_current()
 
+def load_specific(index):
+    global INDEX
+    if 0 <= index < len(FILE_LIST):
+        INDEX = index
+    return _load_current()
 
 
