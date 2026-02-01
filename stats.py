@@ -354,5 +354,5 @@ if __name__ == "__main__":
     process_folders_in_batches(base_path="./Assets/bananadataset/dataset/data",batch_size=200)
     show_random_peak_masks(base_path="./Assets/bananadataset/dataset/data")
     process_full_hsv_by_folder(base_path="./Assets/bananadataset/dataset/data", batch_size=200)
-    verify_all_peaks(base_path="./Assets/bananadataset/dataset/data", num_samples=100)
+    verify_all_peaks(base_path="./Assets/bananadataset/dataset/data", num_samples=20)
     show_forced_peak_samples(base_path="./Assets/bananadataset/dataset/data", target_hue=75, num_to_find=10)
